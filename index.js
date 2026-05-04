@@ -61,8 +61,8 @@ const github = new Github(octokit, {
 })
 
 const options = {
-  'get-tag': { type: 'boolean', short: 'gt' },
-  'print-changelog': { type: 'boolean', short: 'pc' }
+  'get-tag': { type: 'boolean', short: 't' },
+  'print-changelog': { type: 'boolean', short: 'c' }
 }
 
 const { values } = parseArgs({ options })
