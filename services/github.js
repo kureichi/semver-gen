@@ -7,9 +7,10 @@ export class Github {
     this.changelogsConfig = changelogsConfig
 
     this.newTag = null
+    this.base = null
     this.data = {
       latestTag: null,
-      commitMessages: null
+      commits: null
     }
   }
   async fetch() {
@@ -25,16 +26,21 @@ export class Github {
       basehead: `${this.data.latestTag}...${this.branchName}`
     })
 
-    this.data.commitMessages = data2
+    this.data.commits = data2
   }
 
   async getLatestTag() {
     if (!this.data.latestTag) {
-      const { data } = await this.octokit.rest.repos.getLatestRelease({
-        owner: this.owner,
-        repo: this.repoName,
-      })
-      this.data.latestTag = data.tag_name
+      try {
+        const { data } = await this.octokit.rest.repos.getLatestRelease({
+          owner: this.owner,
+          repo: this.repoName,
+        })
+
+        this.data.latestTag = data
+      } catch {
+        this.data.latestTag = ''
+      }
     }
 
     return this.data.latestTag
@@ -43,16 +49,27 @@ export class Github {
   async getCommitMessage() {
     const lastTag = await this.getLatestTag()
 
+    let base = this.base ?? lastTag
     if (!this.data.commitMessages) {
+      if (!base) {
+        const allCommits = await this.octokit.paginate(this.octokit.rest.repos.listCommits, {
+          owner: this.owner,
+          repo: this.repoName,
+        });
+        const initialCommit = allCommits[allCommits.length - 1]
+        base = initialCommit.sha;
+      }
+
       const { data } = await this.octokit.rest.repos.compareCommitsWithBasehead({
         owner: this.owner,
         repo: this.repoName,
-        basehead: `${lastTag}...${this.branchName}`
+        basehead: `${base}...${this.branchName}`
       })
-      this.data.commitMessages = data
+      this.data.commits = data.commits
+      this.base = base
     }
 
-    const messages = this.data.commitMessages.commits.map(c => {
+    const messages = this.data.commits.map(c => {
       const authorMD = c.author ? `[@${c.author.login}](https://github.com/${c.author.login})` : ''
 
       const firstLine = c.commit.message.split('\n')[0]
@@ -107,6 +124,11 @@ export class Github {
     if (this.newTag) return this.newTag
 
     const changeLogsObj = await this.generateChangelogsObj()
+    const latestTag = await this.getLatestTag()
+    if (!latestTag) {
+      return 'v1.0.0'
+    }
+
     const latestVersion = (await this.getLatestTag()).slice(1).split('.')
     const search = (keySearch) => {
       let isFound = false
