@@ -30,15 +30,13 @@ jobs:
           OWNER: ${{ github.repository_owner }}
           REPO: ${{ github.event.repository.name }}
           BRANCH: ${{ github.ref_name }}
-          CHANGELOG-PREFIX: scripts/changelog-prefix.md
         run: |
-          npm run start -- -t
-
-          npm run start -- -c >> ${{ github.workspace }}/scripts/changelog-prefix.txt
+          node index.js -t
+          node index.js -c >> ${{ github.workspace }}/scripts/changelog-prefix.md
 
       - name: Release
         uses: softprops/action-gh-release@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag_name: ${{ steps.run_script.outputs.next_tag }}
-          body_path: ${{ github.workspace }}/scripts/changelog-prefix.txt
+          body_path: ${{ github.workspace }}/scripts/changelog-prefix.md
