@@ -110,13 +110,17 @@ const generateChangelogsMD = async () => {
 }
 
 const generateNextTag = async () => {
-  console.log(await github.getNextTag())
-  fs.appendFileSync(process.env.GITHUB_OUTPUT, `next_tag=${await github.getNextTag()}\n`);
+  const nextTag = await github.getNextTag()
+  console.log(nextTag)
+
+  try {
+    fs.appendFileSync(process.env.GITHUB_OUTPUT, `next_tag=${nextTag}\n`);
+  } catch { null }
 }
 
 const main = async () => {
-  if (values.tag) await generateNextTag()
-  if (values.changelog) await generateChangelogsMD()
+  if (values['get-tag']) await generateNextTag()
+  if (values['print-changelog']) await generateChangelogsMD()
 }
 
 main()
