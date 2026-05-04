@@ -1,0 +1,43 @@
+name: Release Workflow
+permissions:
+  contents: write
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node JS
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Install Dependencies
+        run: |
+          npm install
+
+      - name: Get Next Tags and Changelogs
+        id: 'run_script'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OWNER: ${{ github.repository_owner }}
+          REPO: ${{ github.event.repository.name }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          npm run start -- -gt
+
+          npm run start -- -pc > ${{ github.workspace }}-CHANGELOG.txt
+
+      - name: Release
+        uses: softprops/action-gh-release@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: ${{ steps.run_script.outputs.next_tag }}
+          body_path: ${{ github.workspace }}-CHANGELOG.txt
