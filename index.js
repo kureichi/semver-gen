@@ -1,6 +1,7 @@
 import { Octokit } from 'octokit'
 import { parseArgs } from 'node:util'
 import { Github } from './services/github.js'
+import fs from 'fs'
 
 const exit = (msg) => {
   throw new Error(msg)
@@ -60,8 +61,8 @@ const github = new Github(octokit, {
 })
 
 const options = {
-  tag: { type: 'boolean', short: 't' },
-  changelog: { type: 'boolean', short: 'c' }
+  'get-tag': { type: 'boolean', short: 'gt' },
+  'print-changelog': { type: 'boolean', short: 'pc' }
 }
 
 const { values } = parseArgs({ options })
@@ -110,6 +111,7 @@ const generateChangelogsMD = async () => {
 
 const generateNextTag = async () => {
   console.log(await github.getNextTag())
+  fs.appendFileSync(process.env.GITHUB_OUTPUT, `next_tag=${await github.getNextTag()}\n`);
 }
 
 const main = async () => {
