@@ -1,0 +1,9 @@
+{
+	"type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+	"dependencies": {
+		"octokit": "^5.0.5"
+	}
+}
