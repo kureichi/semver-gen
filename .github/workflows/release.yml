@@ -31,9 +31,9 @@ jobs:
           REPO: ${{ github.event.repository.name }}
           BRANCH: ${{ github.ref_name }}
         run: |
-          npm run start -- -gt
+          npm run start -- -t
 
-          npm run start -- -pc > ${{ github.workspace }}-CHANGELOG.txt
+          npm run start -- -c > ${{ github.workspace }}-CHANGELOG.txt
 
       - name: Release
         uses: softprops/action-gh-release@v3
