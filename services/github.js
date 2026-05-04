@@ -37,7 +37,7 @@ export class Github {
           repo: this.repoName,
         })
 
-        this.data.latestTag = data
+        this.data.latestTag = data.tag_name
       } catch {
         this.data.latestTag = ''
       }
